@@ -76,6 +76,16 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
             return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureSystolic)!
         case "bloodPressureDiastolic":
             return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureDiastolic)!
+        case "calories":
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryEnergyConsumed)!
+        case "carbs":
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryCarbohydrates)!
+        case "fat":
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryFatTotal)!
+        case "protein":
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryProtein)!
+        case "fiber":
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryFiber)!
         default:
             return nil
         }
@@ -122,6 +132,16 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureSystolic)!)
             case "bloodPressureDiastolic":
                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureDiastolic)!)
+            case "calories":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryEnergyConsumed)!)
+            case "carbs":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryCarbohydrates)!)
+            case "fat":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryFatTotal)!)
+            case "protein":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryProtein)!)
+            case "fiber":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.dietaryFiber)!)
             default:
                 print("no match in case: " + item)
             }
