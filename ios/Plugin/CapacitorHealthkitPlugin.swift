@@ -524,27 +524,44 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
 
     
     @objc func requestAuthorization(_ call: CAPPluginCall) {
+        print("[CapacitorHealthkitPlugin] requestAuthorization called")
+        print("[CapacitorHealthkitPlugin] Received options: \(call.options)")
+
         if !HKHealthStore.isHealthDataAvailable() {
+            print("[CapacitorHealthkitPlugin] Health data not available")
             return call.reject("Health data not available")
         }
+
         guard let _all = call.options["all"] as? [String] else {
+            print("[CapacitorHealthkitPlugin] Missing 'all' parameter. Available keys: \(call.options.keys)")
             return call.reject("Must provide all")
         }
+
         guard let _read = call.options["read"] as? [String] else {
+            print("[CapacitorHealthkitPlugin] Missing 'read' parameter")
             return call.reject("Must provide read")
         }
+
         guard let _write = call.options["write"] as? [String] else {
+            print("[CapacitorHealthkitPlugin] Missing 'write' parameter")
             return call.reject("Must provide write")
         }
+
+        print("[CapacitorHealthkitPlugin] Permission request parameters - all: \(_all), read: \(_read), write: \(_write)")
 
         let writeTypes: Set<HKSampleType> = getTypes(items: _write).union(getTypes(items: _all))
         let readTypes: Set<HKSampleType> = getTypes(items: _read).union(getTypes(items: _all))
 
-        healthStore.requestAuthorization(toShare: writeTypes, read: readTypes) { success, _ in
+        print("[CapacitorHealthkitPlugin] Requesting authorization with \(writeTypes.count) write types and \(readTypes.count) read types")
+
+        healthStore.requestAuthorization(toShare: writeTypes, read: readTypes) { success, error in
+            print("[CapacitorHealthkitPlugin] Authorization callback - success: \(success), error: \(String(describing: error))")
             if !success {
+                print("[CapacitorHealthkitPlugin] Permission request failed")
                 call.reject("Could not get permission")
                 return
             }
+            print("[CapacitorHealthkitPlugin] Permission request succeeded")
             call.resolve()
         }
     }
