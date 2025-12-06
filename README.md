@@ -109,7 +109,9 @@ And you're all set ! :+1:
 * [`multipleQueryHKitSampleType(...)`](#multiplequeryhkitsampletype)
 * [`isEditionAuthorized(...)`](#iseditionauthorized)
 * [`multipleIsEditionAuthorized(...)`](#multipleiseditionauthorized)
+* [`saveHKitSample(...)`](#savehkitsample)
 * [Interfaces](#interfaces)
+* [Type Aliases](#type-aliases)
 
 </docgen-index>
 
@@ -206,6 +208,23 @@ Checks if there is writing permission for multiple sample types. This function h
 --------------------
 
 
+### saveHKitSample(...)
+
+```typescript
+saveHKitSample(saveOptions: SaveSampleOptions) => Promise<SaveSampleOutput>
+```
+
+Saves a sample to HealthKit. Requires write permission for the sample type.
+
+| Param             | Type                                                            | Description                                                                                |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **`saveOptions`** | <code><a href="#savesampleoptions">SaveSampleOptions</a></code> | defines the sample data to save including sampleName, value, unit, startDate, and endDate. |
+
+**Returns:** <code>Promise&lt;<a href="#savesampleoutput">SaveSampleOutput</a>&gt;</code>
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -264,6 +283,41 @@ This is used for checking writing permissions.
 | Prop              | Type                  |
 | ----------------- | --------------------- |
 | **`sampleNames`** | <code>string[]</code> |
+
+
+#### SaveSampleOutput
+
+Output returned after saving a sample to HealthKit.
+
+| Prop             | Type                 | Description                     |
+| ---------------- | -------------------- | ------------------------------- |
+| **`success`**    | <code>boolean</code> | Whether the save was successful |
+| **`sampleName`** | <code>string</code>  | The sample type that was saved  |
+| **`value`**      | <code>number</code>  | The value that was saved        |
+
+
+#### SaveSampleOptions
+
+Options for saving a sample to HealthKit.
+
+| Prop             | Type                                                         | Description                                                                                          |
+| ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| **`sampleName`** | <code>string</code>                                          | The type of sample to save (e.g., 'calories', 'carbs', 'fat', 'protein', 'fiber', 'weight')          |
+| **`value`**      | <code>number</code>                                          | The numeric value to save                                                                            |
+| **`unit`**       | <code>string</code>                                          | The unit of measurement (e.g., 'kcal', 'g', 'kg'). If not provided, will be inferred from sampleName |
+| **`startDate`**  | <code>string</code>                                          | ISO 8601 formatted start date string                                                                 |
+| **`endDate`**    | <code>string</code>                                          | ISO 8601 formatted end date string                                                                   |
+| **`metadata`**   | <code><a href="#record">Record</a>&lt;string, any&gt;</code> | Optional metadata to attach to the sample                                                            |
+
+
+### Type Aliases
+
+
+#### Record
+
+Construct a type with a set of properties K of type T
+
+<code>{ [P in K]: T; }</code>
 
 </docgen-api>
 

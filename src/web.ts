@@ -7,6 +7,8 @@ import type {
   CapacitorHealthkitPlugin,
   MultipleQueryOptions,
   SingleQueryOptions,
+  SaveSampleOptions,
+  SaveSampleOutput,
 } from './definitions';
 
 export class CapacitorHealthkitWeb
@@ -37,6 +39,10 @@ export class CapacitorHealthkitWeb
   }
 
   async multipleIsEditionAuthorized(): Promise<void> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async saveHKitSample(_saveOptions: SaveSampleOptions): Promise<SaveSampleOutput> {
     throw this.unimplemented('Not implemented on web.');
   }
 }
