@@ -29,6 +29,11 @@ export interface CapacitorHealthkitPlugin {
    * @param queryOptions defines the sampletypes for which you need to check for writing permission.
    */
   multipleIsEditionAuthorized(queryOptions: MultipleEditionQuery): Promise<void>;
+  /**
+   * Saves a sample to HealthKit. Requires write permission for the sample type.
+   * @param saveOptions defines the sample data to save including sampleName, value, unit, startDate, and endDate.
+   */
+  saveHKitSample(saveOptions: SaveSampleOptions): Promise<SaveSampleOutput>;
 }
 
 /**
@@ -135,6 +140,36 @@ export interface EditionQuery {
  */
 export interface MultipleEditionQuery {
   sampleNames: string[];
+}
+
+/**
+ * Options for saving a sample to HealthKit.
+ */
+export interface SaveSampleOptions {
+  /** The type of sample to save (e.g., 'calories', 'carbs', 'fat', 'protein', 'fiber', 'weight') */
+  sampleName: string;
+  /** The numeric value to save */
+  value: number;
+  /** The unit of measurement (e.g., 'kcal', 'g', 'kg'). If not provided, will be inferred from sampleName */
+  unit?: string;
+  /** ISO 8601 formatted start date string */
+  startDate: string;
+  /** ISO 8601 formatted end date string */
+  endDate: string;
+  /** Optional metadata to attach to the sample */
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Output returned after saving a sample to HealthKit.
+ */
+export interface SaveSampleOutput {
+  /** Whether the save was successful */
+  success: boolean;
+  /** The sample type that was saved */
+  sampleName: string;
+  /** The value that was saved */
+  value: number;
 }
 
 

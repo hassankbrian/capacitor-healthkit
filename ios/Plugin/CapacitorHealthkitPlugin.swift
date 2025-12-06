@@ -714,4 +714,132 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
         }
         healthStore.execute(query)
     }
+    
+    // MARK: - Save/Write Methods
+    
+    func getUnit(for sampleName: String, unitString: String?) -> HKUnit? {
+        // Map sample names to their appropriate units
+        switch sampleName {
+        case "calories":
+            return HKUnit.kilocalorie()
+        case "carbs", "fat", "protein", "fiber":
+            return HKUnit.gram()
+        case "weight":
+            return HKUnit.gramUnit(with: .kilo)
+        case "stepCount", "flightsClimbed":
+            return HKUnit.count()
+        case "activeEnergyBurned", "basalEnergyBurned":
+            return HKUnit.kilocalorie()
+        case "distanceWalkingRunning", "distanceCycling":
+            return HKUnit.meter()
+        case "heartRate", "restingHeartRate", "respiratoryRate":
+            return HKUnit(from: "count/min")
+        case "bodyFat", "oxygenSaturation":
+            return HKUnit.percent()
+        case "basalBodyTemperature", "bodyTemperature":
+            return HKUnit.degreeCelsius()
+        case "bloodPressureSystolic", "bloodPressureDiastolic":
+            return HKUnit.millimeterOfMercury()
+        case "bloodGlucose":
+            return HKUnit.moleUnit(withMolarMass: HKUnitMolarMassBloodGlucose).unitDivided(by: HKUnit.literUnit(with: .kilo))
+        default:
+            // Try to parse from unitString if provided
+            if let unitStr = unitString {
+                switch unitStr.lowercased() {
+                case "kcal", "kilocalorie":
+                    return HKUnit.kilocalorie()
+                case "g", "gram":
+                    return HKUnit.gram()
+                case "kg", "kilogram":
+                    return HKUnit.gramUnit(with: .kilo)
+                case "count":
+                    return HKUnit.count()
+                case "m", "meter":
+                    return HKUnit.meter()
+                case "percent", "%":
+                    return HKUnit.percent()
+                default:
+                    return nil
+                }
+            }
+            return nil
+        }
+    }
+    
+    @objc func saveHKitSample(_ call: CAPPluginCall) {
+        print("[CapacitorHealthkitPlugin] saveHKitSample called")
+        print("[CapacitorHealthkitPlugin] Received options: \(call.options ?? [:])")
+        
+        guard let sampleName = call.options["sampleName"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'sampleName' parameter")
+            return call.reject("Must provide sampleName")
+        }
+        
+        guard let value = call.options["value"] as? Double else {
+            print("[CapacitorHealthkitPlugin] Missing 'value' parameter")
+            return call.reject("Must provide value")
+        }
+        
+        guard let startDateString = call.options["startDate"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'startDate' parameter")
+            return call.reject("Must provide startDate")
+        }
+        
+        guard let endDateString = call.options["endDate"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'endDate' parameter")
+            return call.reject("Must provide endDate")
+        }
+        
+        let unitString = call.options["unit"] as? String
+        
+        print("[CapacitorHealthkitPlugin] Save parameters - sampleName: \(sampleName), value: \(value), unit: \(unitString ?? "auto"), startDate: \(startDateString), endDate: \(endDateString)")
+        
+        // Get the sample type
+        guard let sampleType = getSampleType(sampleName: sampleName) as? HKQuantityType else {
+            print("[CapacitorHealthkitPlugin] Could not get sample type for: \(sampleName)")
+            return call.reject("Invalid sample name: \(sampleName)")
+        }
+        
+        // Get the appropriate unit
+        guard let unit = getUnit(for: sampleName, unitString: unitString) else {
+            print("[CapacitorHealthkitPlugin] Could not determine unit for: \(sampleName)")
+            return call.reject("Could not determine unit for sample type: \(sampleName)")
+        }
+        
+        // Parse dates
+        let startDate = getDateFromString(inputDate: startDateString)
+        let endDate = getDateFromString(inputDate: endDateString)
+        
+        print("[CapacitorHealthkitPlugin] Parsed dates - start: \(startDate), end: \(endDate)")
+        
+        // Create the quantity
+        let quantity = HKQuantity(unit: unit, doubleValue: value)
+        
+        // Create the sample
+        let sample = HKQuantitySample(
+            type: sampleType,
+            quantity: quantity,
+            start: startDate,
+            end: endDate,
+            metadata: nil
+        )
+        
+        print("[CapacitorHealthkitPlugin] Created sample, attempting to save...")
+        
+        // Save to HealthStore
+        healthStore.save(sample) { success, error in
+            if success {
+                print("[CapacitorHealthkitPlugin] Successfully saved sample to HealthKit")
+                call.resolve([
+                    "success": true,
+                    "sampleName": sampleName,
+                    "value": value
+                ])
+            } else {
+                let errorMessage = error?.localizedDescription ?? "Unknown error"
+                print("[CapacitorHealthkitPlugin] Failed to save sample: \(errorMessage)")
+                call.reject("Failed to save sample: \(errorMessage)")
+            }
+        }
+    }
 }
