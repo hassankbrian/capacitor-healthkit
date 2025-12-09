@@ -844,4 +844,89 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
             }
         }
     }
+    
+    @objc func deleteHKitSamples(_ call: CAPPluginCall) {
+        print("[CapacitorHealthkitPlugin] deleteHKitSamples called")
+        
+        guard let sampleName = call.options["sampleName"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'sampleName' parameter")
+            return call.reject("Must provide sampleName")
+        }
+        
+        guard let startDateString = call.options["startDate"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'startDate' parameter")
+            return call.reject("Must provide startDate")
+        }
+        
+        guard let endDateString = call.options["endDate"] as? String else {
+            print("[CapacitorHealthkitPlugin] Missing 'endDate' parameter")
+            return call.reject("Must provide endDate")
+        }
+        
+        print("[CapacitorHealthkitPlugin] Delete parameters - sampleName: \(sampleName), startDate: \(startDateString), endDate: \(endDateString)")
+        
+        // Get the sample type
+        guard let sampleType = getSampleType(sampleName: sampleName) as? HKQuantityType else {
+            print("[CapacitorHealthkitPlugin] Could not get sample type for: \(sampleName)")
+            return call.reject("Invalid sample name: \(sampleName)")
+        }
+        
+        // Parse dates
+        let startDate = getDateFromString(inputDate: startDateString)
+        let endDate = getDateFromString(inputDate: endDateString)
+        
+        print("[CapacitorHealthkitPlugin] Parsed dates - start: \(startDate), end: \(endDate)")
+        
+        // Create predicate for date range and source (only delete samples from our app)
+        let datePredicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        
+        // Query for samples to delete
+        let query = HKSampleQuery(
+            sampleType: sampleType,
+            predicate: datePredicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: nil
+        ) { [weak self] _, samples, error in
+            guard let samples = samples else {
+                let errorMessage = error?.localizedDescription ?? "Unknown error"
+                print("[CapacitorHealthkitPlugin] Failed to query samples for deletion: \(errorMessage)")
+                call.reject("Failed to query samples: \(errorMessage)")
+                return
+            }
+            
+            // Filter to only include samples from our app (by checking the source bundle identifier)
+            let appBundleId = Bundle.main.bundleIdentifier ?? ""
+            let samplesToDelete = samples.filter { sample in
+                return sample.sourceRevision.source.bundleIdentifier == appBundleId
+            }
+            
+            print("[CapacitorHealthkitPlugin] Found \(samples.count) total samples, \(samplesToDelete.count) from our app to delete")
+            
+            if samplesToDelete.isEmpty {
+                print("[CapacitorHealthkitPlugin] No samples to delete")
+                call.resolve([
+                    "success": true,
+                    "deletedCount": 0
+                ])
+                return
+            }
+            
+            // Delete the samples
+            healthStore.delete(samplesToDelete) { success, error in
+                if success {
+                    print("[CapacitorHealthkitPlugin] Successfully deleted \(samplesToDelete.count) samples")
+                    call.resolve([
+                        "success": true,
+                        "deletedCount": samplesToDelete.count
+                    ])
+                } else {
+                    let errorMessage = error?.localizedDescription ?? "Unknown error"
+                    print("[CapacitorHealthkitPlugin] Failed to delete samples: \(errorMessage)")
+                    call.reject("Failed to delete samples: \(errorMessage)")
+                }
+            }
+        }
+        
+        healthStore.execute(query)
+    }
 }

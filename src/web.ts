@@ -9,6 +9,8 @@ import type {
   SingleQueryOptions,
   SaveSampleOptions,
   SaveSampleOutput,
+  DeleteSampleOptions,
+  DeleteSampleOutput,
 } from './definitions';
 
 export class CapacitorHealthkitWeb
@@ -43,6 +45,10 @@ export class CapacitorHealthkitWeb
   }
 
   async saveHKitSample(_saveOptions: SaveSampleOptions): Promise<SaveSampleOutput> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async deleteHKitSamples(_deleteOptions: DeleteSampleOptions): Promise<DeleteSampleOutput> {
     throw this.unimplemented('Not implemented on web.');
   }
 }

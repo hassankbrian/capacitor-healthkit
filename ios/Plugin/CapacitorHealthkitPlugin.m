@@ -11,4 +11,5 @@ CAP_PLUGIN(CapacitorHealthkitPlugin, "CapacitorHealthkit",
            CAP_PLUGIN_METHOD(isEditionAuthorized, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(multipleIsEditionAuthorized, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(saveHKitSample, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(deleteHKitSamples, CAPPluginReturnPromise);
 )

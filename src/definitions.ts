@@ -34,6 +34,11 @@ export interface CapacitorHealthkitPlugin {
    * @param saveOptions defines the sample data to save including sampleName, value, unit, startDate, and endDate.
    */
   saveHKitSample(saveOptions: SaveSampleOptions): Promise<SaveSampleOutput>;
+  /**
+   * Deletes samples from HealthKit for a specific date range. Only deletes samples created by this app.
+   * @param deleteOptions defines the sample type and date range to delete.
+   */
+  deleteHKitSamples(deleteOptions: DeleteSampleOptions): Promise<DeleteSampleOutput>;
 }
 
 /**
@@ -170,6 +175,28 @@ export interface SaveSampleOutput {
   sampleName: string;
   /** The value that was saved */
   value: number;
+}
+
+/**
+ * Options for deleting samples from HealthKit.
+ */
+export interface DeleteSampleOptions {
+  /** The type of sample to delete (e.g., 'calories', 'carbs', 'fat', 'protein', 'fiber') */
+  sampleName: string;
+  /** ISO 8601 formatted start date string */
+  startDate: string;
+  /** ISO 8601 formatted end date string */
+  endDate: string;
+}
+
+/**
+ * Output returned after deleting samples from HealthKit.
+ */
+export interface DeleteSampleOutput {
+  /** Whether the delete was successful */
+  success: boolean;
+  /** Number of samples that were deleted */
+  deletedCount: number;
 }
 
 
